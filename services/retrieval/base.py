@@ -21,3 +21,7 @@ class BaseRetrival(object):
 
     def __call__(self, query, image_store):
         return self.search(query, image_store)
+
+    
+    def image_embedding(self, image:str): 
+        raise NotImplementedError("image_embedding is not implemented")

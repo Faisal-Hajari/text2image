@@ -1,16 +1,17 @@
 from typing import Optional
 
 import torch
+from torch import Tensor
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
 
-from .base import BaseRetrival
-from .torch_utils import get_device
-
+from services.retrieval.base import BaseRetrival
+from services.retrieval.torch_utils import get_device
+from services.cache import BaseCache
 class Clip(BaseRetrival):  
     def __init__(self, 
                  model_name:Optional[str]= None, 
-                 cache:Optional[callable]= None, 
+                 cache:Optional[BaseCache]= None, 
                  metric:Optional[callable]= None
                 ) -> None: #TODO: add cache class
         super().__init__()
@@ -38,14 +39,10 @@ class Clip(BaseRetrival):
         query_tokenized = self.processor(text=query, return_tensors="pt")
         query_features = self.model.get_text_features(**query_tokenized.to(self.device))
 
-        #func2 
         if self.cache: 
-            image_features = self.cache(query_features, image_store) #TODO: should we handle the inserstion to the db here ? what will be the benifit of using another function ? 
+            image_features = self.cache(query_features, image_store, self.image_embedding) #TODO: should we handle the inserstion to the db here ? what will be the benifit of using another function ? 
         else: 
-            images_processed = self.processor(images=[Image.open(image) for image in image_store], return_tensors="pt")
-            image_features = self.model.get_image_features(**images_processed.to(self.device))
-
-        #seperating might help with inheratance (cringe ?) say we replace huggingface with openCLIP ? we will not need to re-write this 
+           image_features = self.image_embedding(image_store)
 
 
         mask = self.metric(query_features, image_features)
@@ -56,6 +53,11 @@ class Clip(BaseRetrival):
         """ what should this do ?
         """
         pass 
+    
+    def image_embedding(self, image_store:list[str])->Tensor:
+        images_processed = self.processor(images=[Image.open(image) for image in image_store], return_tensors="pt")
+        image_features = self.model.get_image_features(**images_processed.to(self.device))
+        return image_features
     
     @staticmethod
     def list_models(model_name:str)->list[str]:
