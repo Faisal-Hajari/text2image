@@ -1,7 +1,7 @@
-from services.retrieval import BaseRetrival
+from services.retrieval import BaseRetrieval
 
 class ComposeRetrivals(object): 
-    def __init__(self, retrievals: list[BaseRetrival]): 
+    def __init__(self, retrievals: list[BaseRetrieval]): 
         self.retrievals = retrievals
     
     def __call__(self, query:list[str], image_store:list[str])->list[str]: 
