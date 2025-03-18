@@ -26,7 +26,7 @@ class BinaryQwenVL(BaseRetrieval):
         self.processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-7B-Instruct")
 
     @torch.no_grad()
-    def search(self, query: list[str], image_store: list[str]) -> tuple[str, list[str]]:
+    def search(self, query: str, image_store: list[str]) -> tuple[str, list[str]]:
         """
         Search for the query in the image store
 
@@ -37,14 +37,14 @@ class BinaryQwenVL(BaseRetrieval):
             - query[list[str]]: the search term.
             - image_store[list[str]]: list of image paths after filtering
         """
-        
+        new_image_store = []
         for image_path in image_store:
             input_tensor = self.process_input(query, image_path, self.system_prompt, self.processor)
             input_tensor = input_tensor.to(self.device)
             response = self.generate(input_tensor, self.processor)
-            if not self.is_yes(response): 
-                image_store.remove(image_path)
-        return query, image_store
+            if self.is_yes(response): 
+                new_image_store.append(image_path)
+        return query, new_image_store
 
     
     def process_input(self, query: str, image: str, system_prompt, processor):

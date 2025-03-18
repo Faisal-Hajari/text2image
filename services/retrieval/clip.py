@@ -38,7 +38,7 @@ class Clip(BaseRetrieval):
         return self.search(query, image_store)
         
     @torch.no_grad()
-    def search(self, query: list[str], image_store: list[str]) -> tuple[str, list[str]]:
+    def search(self, query: str, image_store: list[str]) -> tuple[str, list[str]]:
         """
         Search for the query in the image store
 
@@ -49,7 +49,7 @@ class Clip(BaseRetrieval):
             - query[list[str]]: the search term.
             - image_store[list[str]]: list of image paths after filtering
         """
-        query_features = self.text_embedding(query)
+        query_features = self.text_embedding([query])
         image_features = self.image_embedding(image_store)
         
         for image_path, image_feature in zip(image_store, image_features):
