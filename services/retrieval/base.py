@@ -19,7 +19,7 @@ class BaseRetrival(object):
         """
         raise NotImplementedError("search is not implemented")
 
-    def __call__(self, query, image_store):
+    def __call__(self, query:str, image_store:list[str])->tuple[str, list[str]]: 
         return self.search(query, image_store)
 
     

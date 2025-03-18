@@ -1,2 +1,4 @@
-from .clip import Clip
 from .base import BaseRetrival
+
+
+class 
