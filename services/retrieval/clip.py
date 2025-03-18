@@ -5,12 +5,12 @@ from torch import Tensor
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
 
-from services.retrieval.base import BaseRetrival
+from services.retrieval.base import BaseRetrieval
 from services.retrieval.torch_utils import get_device
 from services.db import BaseDB
 
 
-class Clip(BaseRetrival):
+class Clip(BaseRetrieval):
     def __init__(
         self,
         db:BaseDB,

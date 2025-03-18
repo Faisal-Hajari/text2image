@@ -1,4 +1,4 @@
-class BaseRetrival(object): 
+class BaseRetrieval(object): 
     def __init__(self, *args, **kwargs)->None:
         return None 
     

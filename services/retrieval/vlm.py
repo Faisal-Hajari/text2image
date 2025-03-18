@@ -8,11 +8,11 @@ from transformers import (
 from qwen_vl_utils import process_vision_info
 import torch
 
-from .base import BaseRetrival
+from .base import BaseRetrieval
 from services.db import BaseDB
 from services.retrieval.torch_utils import get_device
 
-class QwenVLRetrival(BaseRetrival):
+class QwenVL(BaseRetrieval):
     def __init__(self, db: BaseDB, system_promt: Optional[str] = "", max_new_tokens:int=128, generator_map:list=["yes", "no"]):
         self.system_prompt = system_promt
         self.max_new_tokens = max_new_tokens
