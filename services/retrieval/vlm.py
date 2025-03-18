@@ -12,11 +12,10 @@ from .base import BaseRetrieval
 from services.db import BaseDB
 from services.retrieval.torch_utils import get_device
 
-class QwenVL(BaseRetrieval):
-    def __init__(self, db: BaseDB, system_promt: Optional[str] = "", max_new_tokens:int=128, generator_map:list=["yes", "no"]):
+class BinaryQwenVL(BaseRetrieval):
+    def __init__(self, db: BaseDB, system_promt: Optional[str] = "", max_new_tokens:int=128):
         self.system_prompt = system_promt
         self.max_new_tokens = max_new_tokens
-        self.gennerator_map = generator_map
         self.device = get_device()
         self.db = db
         self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
@@ -43,7 +42,7 @@ class QwenVL(BaseRetrieval):
             input_tensor = self.process_input(query, image_path, self.system_prompt, self.processor)
             input_tensor = input_tensor.to(self.device)
             response = self.generate(input_tensor, self.processor)
-            image_feature = self._extract_response(response, self.gennerator_map)
+            image_feature = self._extract_response(response)
             self.db.insert(image_path, image_feature)
         
         image_store = self.db.search(torch.tensor([[1.0, 0.0]]))
@@ -64,12 +63,13 @@ class QwenVL(BaseRetrieval):
         return input
     
     
-    def _extract_response(self, response, map:list=["yes", "no"])->torch.Tensor:
-        feature = torch.zeros(len(map))
+    def _extract_response(self, response)->torch.Tensor:
+        feature = torch.zeros(2)
         response = response.lower()
-        for i, m in enumerate(map):
-            if m in response:
-                feature[i] = 1
+        if "yes" in response:
+            feature[0] = 1.0
+        elif "no" in response:
+            feature[1] = 1.0
         return feature
             
     
