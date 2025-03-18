@@ -13,8 +13,8 @@ from services.db import BaseDB
 class Clip(BaseRetrival):
     def __init__(
         self,
+        db:BaseDB,
         model_name: Optional[str] = None,
-        db: Optional[BaseDB] = None,
     ) -> None:
         super().__init__()
         self.device = get_device()
