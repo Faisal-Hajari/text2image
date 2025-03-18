@@ -13,11 +13,10 @@ from services.db import BaseDB
 from services.retrieval.torch_utils import get_device
 
 class BinaryQwenVL(BaseRetrieval):
-    def __init__(self, db: BaseDB, system_promt: Optional[str] = "", max_new_tokens:int=128):
+    def __init__(self, system_promt: Optional[str] = "", max_new_tokens:int=128):
         self.system_prompt = system_promt
         self.max_new_tokens = max_new_tokens
         self.device = get_device()
-        self.db = db
         self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
             "Qwen/Qwen2.5-VL-7B-Instruct",
             torch_dtype=torch.bfloat16,
@@ -38,15 +37,13 @@ class BinaryQwenVL(BaseRetrieval):
             - query[list[str]]: the search term.
             - image_store[list[str]]: list of image paths after filtering
         """
-        self.db.clear()
+        
         for image_path in image_store:
             input_tensor = self.process_input(query, image_path, self.system_prompt, self.processor)
             input_tensor = input_tensor.to(self.device)
             response = self.generate(input_tensor, self.processor)
-            image_feature = self._extract_response(response)
-            self.db.insert(image_path, image_feature)
-        
-        image_store = self.db.search(torch.tensor([[1.0, 0.0]]))
+            if not self.is_yes(response): 
+                image_store.remove(image_path)
         return query, image_store
 
     
@@ -64,18 +61,12 @@ class BinaryQwenVL(BaseRetrieval):
         return input
     
     
-    def _extract_response(self, response)->torch.Tensor:
-        feature = torch.zeros(2)
+    def is_yes(self, response)->torch.Tensor:
         response = response.lower()
-        if "yes" in response:
-            feature[0] = 1.0
-        elif "no" in response:
-            feature[1] = 1.0
-        return feature
-            
+        return 'yes' in response    
     
     def generate(self, input_tensor, processor):
-        generated_ids = self.model.generate(**input_tensor, max_new_tokens=128)
+        generated_ids = self.model.generate(**input_tensor, max_new_tokens=self.max_new_tokens)
         generated_ids_trimmed = [
             out_ids[len(in_ids) :] for in_ids, out_ids in zip(input_tensor.input_ids, generated_ids)
         ]
