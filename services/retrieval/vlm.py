@@ -38,6 +38,7 @@ class BinaryQwenVL(BaseRetrieval):
             - query[list[str]]: the search term.
             - image_store[list[str]]: list of image paths after filtering
         """
+        self.db.clear()
         for image_path in image_store:
             input_tensor = self.process_input(query, image_path, self.system_prompt, self.processor)
             input_tensor = input_tensor.to(self.device)

@@ -18,3 +18,7 @@ class BaseDB(object):
         """this this function takes an image path and a corresponding vector 
         to the image and stores the image in the database""" 
         raise NotImplementedError
+
+    def clear(self) -> None:
+        """this function clears the database"""
+        raise NotImplementedError

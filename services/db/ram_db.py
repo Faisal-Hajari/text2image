@@ -27,3 +27,6 @@ class RamDB(BaseDB):
         """inserts an image into the cache"""
         if image not in self.db or not cache:
             self.db[image] = image_vector 
+    
+    def clear(self):
+        self.db:dict = {}
